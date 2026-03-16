@@ -27,7 +27,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Accept-version: v1');
 
-$fakePerson = new FakeInfo;
+$fakePerson = new FakeInfo();
 http_response_code(200);
 
 if (count($urlPieces) === 1) {
@@ -77,7 +77,8 @@ switch ($urlPieces[POS_ENTITY]) {
         reportError(ERROR_ENDPOINT);
 }
 
-function reportError(int $error = -1) {
+function reportError(int $error = -1)
+{
     switch ($error) {
         case ERROR_METHOD:
             http_response_code(405);
