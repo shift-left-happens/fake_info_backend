@@ -1,5 +1,7 @@
 <?php
 
+namespace App;
+
 /**
  * Class FakeInfo.
  * It generates information about fake persons.
@@ -155,7 +157,7 @@ class FakeInfo
 
         // Postal code and town
         require_once 'Town.php';
-        $town = new Town();
+        $town = new \Town();
         $town = $town->getRandomTown();
         $this->address['postal_code'] = $town['postal_code'];
         $this->address['town_name'] = $town['town_name'];
@@ -264,7 +266,9 @@ class FakeInfo
     /**
      * Returns a fake CPR, full name, gender, and birth date
      *
-     * @return array ['CPR' => value, 'firstName' => value, 'lastName' => value, 'gender' => 'female' | 'male', 'birthDate' => value]
+     * @return array ['CPR' => value, 'firstName' => value,
+     *                'lastName' => value, 'gender' => 'female' | 'male',
+     *                'birthDate' => value]
      */
     public function getCprFullNameGenderAndBirthDate(): array
     {
@@ -300,7 +304,9 @@ class FakeInfo
     /**
      * Returns fake person information
      *
-     * @return array ['CPR' => value, 'firstName' => value, 'lastName' => value, 'gender' => 'female'|'male', 'birthDate' => value, 'phoneNumber' => value]
+     * @return array ['CPR' => value, 'firstName' => value,
+     *                'lastName' => value, 'gender' => 'female'|'male',
+     *                'birthDate' => value, 'phoneNumber' => value]
      */
     public function getFakePerson(): array
     {
