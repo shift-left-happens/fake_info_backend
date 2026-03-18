@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # Job 1: SonarCloud Analysis
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Full history needed for accurate analysis
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Job 2: Lint PHP Code
+  lint-php:
+    name: PHP Linting (CodeSniffer)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Install PHP and CodeSniffer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y php-cli
+          wget -q https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar -O /usr/local/bin/phpcs
+          chmod +x /usr/local/bin/phpcs
+
+      - name: Run PHP_CodeSniffer
+        run: phpcs --standard=PSR12 --extensions=php src/ index.php

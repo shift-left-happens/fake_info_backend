@@ -5,11 +5,11 @@ require_once 'DB.php';
 /**
  * Class Town.
  * It generates random postal codes and town names.
- * 
+ *
  * @author  Arturo Mora-Rioja
  * @version 1.0.0 March 2023
  */
-class Town extends DB 
+class Town extends DB
 {
     private static int $townCount = 0;
 
@@ -21,7 +21,7 @@ class Town extends DB
     {
         parent::__construct();
         if (static::$townCount === 0) {
-            $sql =<<<'SQL'
+            $sql = <<<'SQL'
                 SELECT COUNT(*) AS total
                 FROM postal_code;
             SQL;
@@ -34,13 +34,13 @@ class Town extends DB
     /**
      * Generates a random postal code and town
      * based on the values in the addresses database
-     * 
+     *
      * @return array ['postal_code' => value, 'town_name' => value]
      */
     public function getRandomTown(): array
     {
         $randomTown = mt_rand(0, (static::$townCount - 1));
-        $sql =<<<SQL
+        $sql = <<<SQL
             SELECT cPostalCode AS postal_code, cTownName AS town_name
             FROM postal_code
             LIMIT $randomTown, 1;
