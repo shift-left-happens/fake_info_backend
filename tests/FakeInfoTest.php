@@ -12,6 +12,6 @@ class FakeInfoTest extends TestCase
         $fakeInfo = new FakeInfo();
         $cpr = $fakeInfo->getCpr();
 
-        $this->assertMatchesRegularExpression('/^\d{9}$/', $cpr);
+        $this->assertMatchesRegularExpression('/^\d{10}$/', $cpr);
     }
 }
