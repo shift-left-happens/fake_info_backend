@@ -26,6 +26,14 @@
             $this->fakeInfo = new FakeInfo();
         }
 
+        public function testCprHasTenDigits(): void
+        {
+            $fakeInfo = new FakeInfo();
+            $cpr = $fakeInfo->getCpr();
+
+            $this->assertMatchesRegularExpression('/^\d{10}$/', $cpr);
+        }
+
         public static function getTestData(): array
         {
             return [
