@@ -19,6 +19,12 @@
 
     class FakeInfoTest extends TestCase
     {
+        private FakeInfo $fakeInfo;
+        protected function setUp(): void
+        {
+            // This method is called before each test. You can use it to set up common objects or state.
+            $this->fakeInfo = new FakeInfo();
+        }
 
         public static function getTestData(): array
         {
@@ -59,8 +65,7 @@
         #[DataProvider('getTestData')]
         public function testExists($fieldname, $method)
         {
-            $fakeInfo = new FakeInfo();
-            $result = $fakeInfo->$method();
+            $result = $this->fakeInfo->$method();
 
             $this->assertArrayHasKey($fieldname, $result);
         }
@@ -68,8 +73,7 @@
         #[DataProvider('getTestData')]
         public function testIsString($fieldname, $method)
         {
-            $fakeInfo = new FakeInfo();
-            $result = $fakeInfo->$method();
+            $result = $this->fakeInfo->$method();
 
             $this->assertIsString($result[$fieldname]);
         }
@@ -77,16 +81,14 @@
         #[DataProvider('getTestData')]
         public function testIsNotEmpty($fieldname, $method)
         {
-            $fakeInfo = new FakeInfo();
-            $result = $fakeInfo->$method();
+            $result = $this->fakeInfo->$method();
 
             $this->assertNotEmpty($result[$fieldname]);
         }
 
         public function testFirstNameFormat()
         {
-            $fakeInfo = new FakeInfo();
-            $result = $fakeInfo->getFullNameAndGender();
+            $result = $this->fakeInfo->getFullNameAndGender();
 
             $pattern = '/^[A-Za-zÆØÅæøå]+ [A-Z]\.$/';
 
@@ -98,8 +100,7 @@
 
         public function testLastNameFormat()
         {
-            $fakeInfo = new FakeInfo();
-            $result = $fakeInfo->getFullNameAndGender();
+            $result = $this->fakeInfo->getFullNameAndGender();
 
             $pattern = '/^[A-Za-zÆØÅæøå]+$/';
 
@@ -109,11 +110,33 @@
             );
         }
 
-        public function testFirstNameNoNumbers()
-        {
-            $fakeInfo = new FakeInfo();
-            $result = $fakeInfo->getFullNameAndGender();
 
-            $this->assertDoesNotMatchRegularExpression('/[0-9]/', $result['firstName']);
+        public static function noNumbersProvider(): array
+        {
+            return [
+                // getFullNameAndGender fields
+                ['firstName', 'getFullNameAndGender'],
+                ['lastName', 'getFullNameAndGender'],
+                ['gender', 'getFullNameAndGender'],
+                ['firstName', 'getFullNameGenderAndBirthDate'],
+                ['lastName', 'getFullNameGenderAndBirthDate'],
+                ['gender', 'getFullNameGenderAndBirthDate'],
+                ['firstName', 'getCprFullNameAndGender'],
+                ['lastName', 'getCprFullNameAndGender'],
+                ['gender', 'getCprFullNameAndGender'],
+                ['firstName', 'getCprFullNameGenderAndBirthDate'],
+                ['lastName', 'getCprFullNameGenderAndBirthDate'],
+                ['gender', 'getCprFullNameGenderAndBirthDate'],
+                ['firstName', 'getFakePerson'],
+                ['lastName', 'getFakePerson'],
+                ['gender', 'getFakePerson'],
+            ];
+        }
+        #[DataProvider('noNumbersProvider')]
+        public function testFirstNameNoNumbers($fieldname, $method)
+        {
+            $result = $this->fakeInfo->$method();
+
+            $this->assertDoesNotMatchRegularExpression('/[0-9]/', $result[$fieldname]);
         }
     }
