@@ -1,0 +1,24 @@
+{
+  "name": "soft-mandatory/fake-info-backend",
+  "description": "Fake data generator backend",
+  "type": "project",
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5"
+  },
+  "autoload": {
+    "classmap": [
+      "src/"
+    ]
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/"
+    ]
+  },
+  "scripts": {
+    "test": "phpunit"
+  }
+}
