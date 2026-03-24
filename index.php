@@ -28,6 +28,16 @@ $reportError = function (int $error = -1) {
     exit();
 };
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     $reportError(0);
 }
@@ -44,7 +54,6 @@ $url = substr($url, strpos($url, basename(__DIR__)));
 $urlPieces = explode('/', urldecode($url));
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
 header('Accept-version: v1');
 
 $fakePerson = new FakeInfo();
