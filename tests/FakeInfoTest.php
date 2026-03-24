@@ -1,5 +1,5 @@
  /** Note:
- * There is some repetition in creating the FakeInfo object and retrieving data.
+ * There is going to be some repetition in creating the FakeInfo object and retrieving data.
  * It was suggested to use a PHPUnit Data Provider to reduce repetition when
  * testing multiple similar fields (e.g. firstName, lastName, gender).
  *
