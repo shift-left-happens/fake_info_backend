@@ -110,6 +110,24 @@
             );
         }
 
+        public static function genderProvider(): array
+        {
+            return [
+                // getFullNameAndGender fields
+                ['gender', 'getFullNameAndGender'],
+                ['gender', 'getFullNameGenderAndBirthDate'],
+                ['gender', 'getCprFullNameAndGender'],
+                ['gender', 'getCprFullNameGenderAndBirthDate'],
+                ['gender', 'getFakePerson'],
+            ];
+        }
+        #[DataProvider('genderProvider')]
+        public function testIsValidGender($fieldname, $method)
+        {
+            $result = $this->fakeInfo->$method();
+            $this->assertContains($result[$fieldname], ['male', 'female']);
+        }
+
 
         public static function noNumbersProvider(): array
         {
