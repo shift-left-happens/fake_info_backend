@@ -65,17 +65,29 @@ class PhoneTest extends TestCase
         $phone = $this->fakeInfo->getFakePerson()['phoneNumber'];
         $this->assertTrue(ctype_digit($phone), "Person phone number should contain only digits");
     }
-
+    private function hasValidPrefix(string $phone): bool
+    {
+        foreach ($this->allowedPrefixes as $prefix) {
+            if (str_starts_with($phone, (string)$prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
     public function testPersonPhonePrefix(): void
     {
         $phone = $this->fakeInfo->getFakePerson()['phoneNumber'];
-        $allowed = false;
-        foreach ($this->allowedPrefixes as $prefix) {
-            if (str_starts_with($phone, (string) $prefix)) {
-                $allowed = true;
-                break;
-            }
+
+        $this->assertTrue($this->hasValidPrefix($phone), "Person phone prefix is not allowed");
+    }
+    public function testPhoneAlwaysValid(): void
+    {
+        for ($i = 0; $i < 100; $i++) {
+            $phone = $this->fakeInfo->getPhoneNumber();
+
+            $this->assertEquals(8, strlen($phone));
+            $this->assertTrue(ctype_digit($phone));
+            $this->assertTrue($this->hasValidPrefix($phone));
         }
-        $this->assertTrue($allowed, "Person phone prefix is not allowed");
     }
 }
