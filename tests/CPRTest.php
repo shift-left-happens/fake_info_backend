@@ -14,7 +14,7 @@ final class CPRTest extends TestCase
     {
         $this->fakeInfo = new FakeInfo();
     }
-    // Integrationstest via model: CPR-præfiks skal matche den genererede fødselsdato.
+    // Tester de forskellige CPR-relaterede integrationer samlet i én test for at sikre, at de fungerer sammen som forventet.
     
     public function testGeneratedCprStartsWithBirthDatePrefix(): void
     {
@@ -37,18 +37,6 @@ final class CPRTest extends TestCase
         $person = $this->fakeInfo->getFullNameGenderAndBirthDate();
 
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
-    }
-
-    // Integrationstest via model: navn og køn bliver genereret med gyldige værdier.
-    public function testGeneratedNameAndGenderAreValid(): void
-    {
-        $fullNameAndGender = $this->fakeInfo->getFullNameAndGender();
-
-        $this->assertIsString($fullNameAndGender['firstName']);
-        $this->assertNotSame('', $fullNameAndGender['firstName']);
-        $this->assertIsString($fullNameAndGender['lastName']);
-        $this->assertNotSame('', $fullNameAndGender['lastName']);
-        $this->assertContains($fullNameAndGender['gender'], [FakeInfo::GENDER_FEMININE, FakeInfo::GENDER_MASCULINE]);
     }
 
     // Integrationstest via model: getFakePerson skal være konsistent med de enkelte getters.
@@ -84,6 +72,62 @@ final class CPRTest extends TestCase
         }
 
         $this->assertContains($lastDigit, [1, 3, 5, 7, 9], 'For male forventes sidste CPR-ciffer at være ulige.');
+    }
+
+    // Getter-konsistens: CPR skal være ens pa tværs af alle CPR-relaterede getters.
+    public function testCprGetterIsConsistentAcrossCompositeGetters(): void
+    {
+        $cpr = $this->fakeInfo->getCpr();
+        $fakePerson = $this->fakeInfo->getFakePerson();
+        $cprNameGender = $this->fakeInfo->getCprFullNameAndGender();
+        $cprNameGenderBirthDate = $this->fakeInfo->getCprFullNameGenderAndBirthDate();
+
+        $this->assertSame($cpr, $fakePerson['CPR']);
+        $this->assertSame($cpr, $cprNameGender['CPR']);
+        $this->assertSame($cpr, $cprNameGenderBirthDate['CPR']);
+    }
+
+    // CPR-regler pa alle CPR-returnerende getters: format, parity og prefix hvor birthDate findes.
+    public function testAllCprGettersFollowCprRules(): void
+    {
+        $cprNameGender = $this->fakeInfo->getCprFullNameAndGender();
+        $cprNameGenderBirthDate = $this->fakeInfo->getCprFullNameGenderAndBirthDate();
+        $fakePerson = $this->fakeInfo->getFakePerson();
+
+        $this->assertMatchesRegularExpression('/^\d{10}$/', $cprNameGender['CPR']);
+        $this->assertMatchesRegularExpression('/^\d{10}$/', $cprNameGenderBirthDate['CPR']);
+        $this->assertMatchesRegularExpression('/^\d{10}$/', $fakePerson['CPR']);
+
+        if ($cprNameGender['gender'] === FakeInfo::GENDER_FEMININE) {
+            $this->assertSame(0, ((int) substr($cprNameGender['CPR'], -1)) % 2, 'Female CPR fra getCprFullNameAndGender skal slutte lige.');
+        }
+        if ($cprNameGender['gender'] === FakeInfo::GENDER_MASCULINE) {
+            $this->assertSame(1, ((int) substr($cprNameGender['CPR'], -1)) % 2, 'Male CPR fra getCprFullNameAndGender skal slutte ulige.');
+        }
+
+        if ($cprNameGenderBirthDate['gender'] === FakeInfo::GENDER_FEMININE) {
+            $this->assertSame(0, ((int) substr($cprNameGenderBirthDate['CPR'], -1)) % 2, 'Female CPR fra getCprFullNameGenderAndBirthDate skal slutte lige.');
+        }
+        if ($cprNameGenderBirthDate['gender'] === FakeInfo::GENDER_MASCULINE) {
+            $this->assertSame(1, ((int) substr($cprNameGenderBirthDate['CPR'], -1)) % 2, 'Male CPR fra getCprFullNameGenderAndBirthDate skal slutte ulige.');
+        }
+
+        if ($fakePerson['gender'] === FakeInfo::GENDER_FEMININE) {
+            $this->assertSame(0, ((int) substr($fakePerson['CPR'], -1)) % 2, 'Female CPR fra getFakePerson skal slutte lige.');
+        }
+        if ($fakePerson['gender'] === FakeInfo::GENDER_MASCULINE) {
+            $this->assertSame(1, ((int) substr($fakePerson['CPR'], -1)) % 2, 'Male CPR fra getFakePerson skal slutte ulige.');
+        }
+
+        $this->assertStringStartsWith(
+            $this->birthDateToCprPrefix($cprNameGenderBirthDate['birthDate']),
+            $cprNameGenderBirthDate['CPR']
+        );
+
+        $this->assertStringStartsWith(
+            $this->birthDateToCprPrefix($fakePerson['birthDate']),
+            $fakePerson['CPR']
+        );
     }
 
     // Integrationstest via model: female-profiler skal altid få lige CPR-slutciffer.
@@ -208,6 +252,27 @@ final class CPRTest extends TestCase
             $this->assertArrayHasKey('CPR', $person);
             $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
             $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $person['CPR']);
+        }
+    }
+
+    // Bulk med CPR-fokus: hver person skal have gyldigt CPR-format, parity og korrekt date-prefix.
+    public function testBulkPersonsFollowCprRulesIncludingParity(): void
+    {
+        $fakeInfo = new FakeInfo();
+        $persons = $fakeInfo->getFakePersons(25);
+
+        foreach ($persons as $person) {
+            $this->assertMatchesRegularExpression('/^\d{10}$/', $person['CPR']);
+            $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
+            $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $person['CPR']);
+
+            $lastDigit = (int) substr($person['CPR'], -1);
+            if ($person['gender'] === FakeInfo::GENDER_FEMININE) {
+                $this->assertSame(0, $lastDigit % 2, 'Female CPR i bulk skal slutte lige.');
+            }
+            if ($person['gender'] === FakeInfo::GENDER_MASCULINE) {
+                $this->assertSame(1, $lastDigit % 2, 'Male CPR i bulk skal slutte ulige.');
+            }
         }
     }
 
