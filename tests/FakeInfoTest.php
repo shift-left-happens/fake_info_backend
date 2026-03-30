@@ -75,28 +75,30 @@ class FakeInfoTest extends TestCase
         ];
     }
     #[DataProvider('getTestData')]
-    public function testExists($fieldname, $method)
+    public function testField($fieldname, $method)
     {
         $result = $this->fakeInfo->$method();
 
         $this->assertArrayHasKey($fieldname, $result);
-    }
-
-    #[DataProvider('getTestData')]
-    public function testIsString($fieldname, $method)
-    {
-        $result = $this->fakeInfo->$method();
-
         $this->assertIsString($result[$fieldname]);
-    }
-
-    #[DataProvider('getTestData')]
-    public function testIsNotEmpty($fieldname, $method)
-    {
-        $result = $this->fakeInfo->$method();
-
         $this->assertNotEmpty($result[$fieldname]);
     }
+
+    // #[DataProvider('getTestData')]
+    // public function testIsString($fieldname, $method)
+    // {
+    //     $result = $this->fakeInfo->$method();
+
+    //     $this->assertIsString($result[$fieldname]);
+    // }
+
+    // #[DataProvider('getTestData')]
+    // public function testIsNotEmpty($fieldname, $method)
+    // {
+    //     $result = $this->fakeInfo->$method();
+
+    //     $this->assertNotEmpty($result[$fieldname]);
+    // }
 
     public function testFirstNameFormat()
     {
