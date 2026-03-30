@@ -42,3 +42,25 @@ jobs:
 
       - name: Run PHP_CodeSniffer
         run: phpcs --standard=PSR12 --extensions=php src/ index.php
+
+  # Job 3: Run test suite
+  testsuite-php:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Start Docker stack
+        run: docker compose up -d --build
+
+      - name: Wait for DB to be ready
+        run: |
+          for i in $(seq 1 15); do
+            docker compose exec -T db mariadb -uroot -e "SELECT 1" addresses_test && break
+            echo "Waiting for DB... ($i)"
+            sleep 2
+          done
+
+      - name: Run PHPUnit
+        run: docker compose exec -T web php vendor/bin/phpunit tests

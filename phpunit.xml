@@ -6,10 +6,6 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests</directory>
-            <exclude>tests/ApiIntegrationTest.php</exclude>
-        </testsuite>
-        <testsuite name="Integration">
-            <file>tests/ApiIntegrationTest.php</file>
         </testsuite>
     </testsuites>
     <php>
