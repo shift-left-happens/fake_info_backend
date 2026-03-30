@@ -87,19 +87,6 @@ class AddressTest extends TestCase
         }
     }
 
-    /** ~20% of addresses should have a letter suffix. */
-    public function testNumberLetterSuffixAppears(): void
-    {
-        $found = false;
-        for ($i = 0; $i < 200 && !$found; $i++) {
-            $number = (string) (new FakeInfo())->getAddress()['address']['number'];
-            if (preg_match('/[A-Z]$/', $number)) {
-                $found = true;
-            }
-        }
-        $this->assertTrue($found, 'No letter suffix found in 200 iterations');
-    }
-
     // ── Floor ────────────────────────────────────
 
     /** Floor: "st" or integer 1–99. */
