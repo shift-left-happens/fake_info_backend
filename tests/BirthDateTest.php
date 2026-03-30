@@ -19,7 +19,7 @@ class BirthDateTest extends TestCase
     // Splits a 'YYYY-MM-DD' string into year, month, and day as integers.
     private function extractDateParts(string $birthDate): array
     {
-        $parts = explode('-', $birthDate);
+        $parts = explode('-', $birthDate); // Potential bug: 1995-08-24-123123123 -> ['1995', '08', '24', '123123123']
         return [
             'year' => (int) $parts[0],
             'month' => (int) $parts[1],
