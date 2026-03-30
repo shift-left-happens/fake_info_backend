@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\FakeInfo;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/FakeInfo.php';
@@ -81,15 +82,29 @@ final class FakeInfoTest_setCpr extends TestCase
     {
         $requiredFemaleSamples = 20;
         $femaleDigits = [];
+        $mismatchMessage = null;
 
         for ($attempt = 0; $attempt < 2000 && count($femaleDigits) < $requiredFemaleSamples; $attempt++) {
             $fakeInfo = new FakeInfo();
             $fullNameAndGender = $fakeInfo->getFullNameAndGender();
 
             if ($fullNameAndGender['gender'] === FakeInfo::GENDER_FEMININE) {
-                $femaleDigits[] = (int) substr($fakeInfo->getCpr(), -1);
+                $digit = (int) substr($fakeInfo->getCpr(), -1);
+                if (!in_array($digit, [0, 2, 4, 6, 8], true)) {
+                    $mismatchMessage = sprintf(
+                        'Female CPR-slutciffer var ulige (%d) ved forsog %d for CPR %s.',
+                        $digit,
+                        $attempt,
+                        $fakeInfo->getCpr()
+                    );
+                    break;
+                }
+
+                $femaleDigits[] = $digit;
             }
         }
+
+        $this->assertNull($mismatchMessage, $mismatchMessage ?? 'Unexpected mismatch i female parity-test.');
 
         $this->assertCount(
             $requiredFemaleSamples,
@@ -107,15 +122,29 @@ final class FakeInfoTest_setCpr extends TestCase
     {
         $requiredMaleSamples = 20;
         $maleDigits = [];
+        $mismatchMessage = null;
 
         for ($attempt = 0; $attempt < 2000 && count($maleDigits) < $requiredMaleSamples; $attempt++) {
             $fakeInfo = new FakeInfo();
             $fullNameAndGender = $fakeInfo->getFullNameAndGender();
 
             if ($fullNameAndGender['gender'] === FakeInfo::GENDER_MASCULINE) {
-                $maleDigits[] = (int) substr($fakeInfo->getCpr(), -1);
+                $digit = (int) substr($fakeInfo->getCpr(), -1);
+                if (!in_array($digit, [1, 3, 5, 7, 9], true)) {
+                    $mismatchMessage = sprintf(
+                        'Male CPR-slutciffer var lige (%d) ved forsog %d for CPR %s.',
+                        $digit,
+                        $attempt,
+                        $fakeInfo->getCpr()
+                    );
+                    break;
+                }
+
+                $maleDigits[] = $digit;
             }
         }
+
+        $this->assertNull($mismatchMessage, $mismatchMessage ?? 'Unexpected mismatch i male parity-test.');
 
         $this->assertCount(
             $requiredMaleSamples,
@@ -140,6 +169,36 @@ final class FakeInfoTest_setCpr extends TestCase
                 $fakeInfo->getCpr(),
                 'CPR-præfiks matcher ikke fødselsdatoen.'
             );
+        }
+    }
+
+    // Integrationstest via model: bulk-funktionen returnerer korrekt antal og gyldigt CPR-format.
+    public function testGetFakePersonsReturnsRequestedAmountWithValidCpr(): void
+    {
+        $fakeInfo = new FakeInfo();
+        $requestedAmount = 10;
+
+        $persons = $fakeInfo->getFakePersons($requestedAmount);
+
+        $this->assertCount($requestedAmount, $persons);
+
+        foreach ($persons as $person) {
+            $this->assertArrayHasKey('CPR', $person);
+            $this->assertMatchesRegularExpression('/^\d{10}$/', $person['CPR']);
+        }
+    }
+
+    // Integrationstest via model: CPR-præfiks matcher fødselsdato i bulk-resultater.
+    public function testBulkPersonsHaveMatchingBirthDateAndCprPrefix(): void
+    {
+        $fakeInfo = new FakeInfo();
+        $persons = $fakeInfo->getFakePersons(20);
+
+        foreach ($persons as $person) {
+            $this->assertArrayHasKey('birthDate', $person);
+            $this->assertArrayHasKey('CPR', $person);
+            $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
+            $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $person['CPR']);
         }
     }
 
