@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\FakeInfo;
 
 require_once __DIR__ . '/../src/FakeInfo.php';
@@ -34,9 +35,18 @@ class AddressTest extends TestCase
         $this->assertIsArray($result['address']);
     }
 
-    public function testAddressContainsAllExpectedKeys(): void
+    
+    public static function addressProvider(): array
     {
-        $address = $this->fakeInfo->getAddress()['address'];
+        return [
+            ['getAddress', 'address'],
+            ['getFakePerson', 'address'],
+        ];
+    }
+    #[DataProvider('addressProvider')]
+    public function testAddressContainsAllExpectedKeys($method, $field): void
+    {
+        $address = $this->fakeInfo->$method()[$field];
         $expected = ['street', 'number', 'floor', 'door', 'postal_code', 'town_name'];
 
         foreach ($expected as $key) {
@@ -45,9 +55,10 @@ class AddressTest extends TestCase
         $this->assertCount(count($expected), $address);
     }
 
-    public function testFakePersonAddressHasSameStructure(): void
+    #[DataProvider('addressProvider')]
+    public function testFakePersonAddressHasSameStructure($method, $field): void
     {
-        $address = $this->fakeInfo->getFakePerson()['address'];
+        $address = $this->fakeInfo->$method()[$field];
         $expected = ['street', 'number', 'floor', 'door', 'postal_code', 'town_name'];
 
         foreach ($expected as $key) {
@@ -58,10 +69,11 @@ class AddressTest extends TestCase
     // ── Street ───────────────────────────────────
 
     /** Street: non-empty, alphabetic + spaces + Danish chars, no leading space. */
-    public function testStreetFormat(): void
+    #[DataProvider('addressProvider')]
+    public function testStreetFormat($method, $field): void
     {
         for ($i = 0; $i < 50; $i++) {
-            $street = (new FakeInfo())->getAddress()['address']['street'];
+            $street = (new FakeInfo())->$method()[$field]['street'];
 
             $this->assertMatchesRegularExpression(
                 '/^[A-Za-zÆØÅæøå][A-Za-zÆØÅæøå ]*$/u',
@@ -74,10 +86,11 @@ class AddressTest extends TestCase
     // ── Number ───────────────────────────────────
 
     /** Number: 1–999 optionally followed by one uppercase letter. */
-    public function testNumberFormat(): void
+    #[DataProvider('addressProvider')]
+    public function testNumberFormat($method, $field): void
     {
         for ($i = 0; $i < 100; $i++) {
-            $number = (string) (new FakeInfo())->getAddress()['address']['number'];
+            $number = (string) (new FakeInfo())->$method()[$field]['number'];
 
             $this->assertMatchesRegularExpression(
                 '/^[1-9]\d{0,2}[A-Z]?$/',
@@ -88,11 +101,12 @@ class AddressTest extends TestCase
     }
 
     /** ~20% of addresses should have a letter suffix. */
-    public function testNumberLetterSuffixAppears(): void
+    #[DataProvider('addressProvider')]
+    public function testNumberLetterSuffixAppears($method, $field): void
     {
         $found = false;
         for ($i = 0; $i < 200 && !$found; $i++) {
-            $number = (string) (new FakeInfo())->getAddress()['address']['number'];
+            $number = (string) (new FakeInfo())->$method()[$field]['number'];
             if (preg_match('/[A-Z]$/', $number)) {
                 $found = true;
             }
@@ -103,10 +117,11 @@ class AddressTest extends TestCase
     // ── Floor ────────────────────────────────────
 
     /** Floor: "st" or integer 1–99. */
-    public function testFloorFormat(): void
+    #[DataProvider('addressProvider')]
+    public function testFloorFormat($method, $field): void
     {
         for ($i = 0; $i < 100; $i++) {
-            $floor = (string) (new FakeInfo())->getAddress()['address']['floor'];
+            $floor = (string) (new FakeInfo())->$method()[$field]['floor'];
 
             $this->assertMatchesRegularExpression(
                 '/^(st|[1-9]\d?)$/',
@@ -117,13 +132,14 @@ class AddressTest extends TestCase
     }
 
     /** Both floor branches ("st" and numeric) must be reachable. */
-    public function testFloorBothBranchesCovered(): void
+    #[DataProvider('addressProvider')]
+    public function testFloorBothBranchesCovered($method, $field): void
     {
         $hitSt = false;
         $hitNumeric = false;
 
         for ($i = 0; $i < 200; $i++) {
-            $floor = (string) (new FakeInfo())->getAddress()['address']['floor'];
+            $floor = (string) (new FakeInfo())->$method()[$field]['floor'];
 
             $hitSt = $hitSt || ($floor === 'st');
             $hitNumeric = $hitNumeric || ($floor !== 'st');
@@ -140,10 +156,11 @@ class AddressTest extends TestCase
     // ── Door ─────────────────────────────────────
 
     /** Door: th|mf|tv | 1-50 | letter(+dash)+1-3 digits. */
-    public function testDoorFormat(): void
+    #[DataProvider('addressProvider')]
+    public function testDoorFormat($method, $field): void
     {
         for ($i = 0; $i < 200; $i++) {
-            $door = (string) (new FakeInfo())->getAddress()['address']['door'];
+            $door = (string) (new FakeInfo())->$method()[$field]['door'];
 
             $this->assertMatchesRegularExpression(
                 '/^(th|mf|tv|[1-9]|[1-4]\d|50|[a-zæøå]-?\d{1,3})$/u',
@@ -158,13 +175,14 @@ class AddressTest extends TestCase
      *   1-7 → "th", 8-14 → "tv", 15-16 → "mf",
      *   17-18 → numeric, 19 → letter+digits, 20 → letter-dash-digits
      */
-    public function testDoorAllBranchesCovered(): void
+    #[DataProvider('addressProvider')]
+    public function testDoorAllBranchesCovered($method, $field): void
     {
         $hit = ['th' => false, 'tv' => false, 'mf' => false,
                 'numeric' => false, 'letterDigits' => false, 'letterDashDigits' => false];
 
         for ($i = 0; $i < 500; $i++) {
-            $door = (string) (new FakeInfo())->getAddress()['address']['door'];
+            $door = (string) (new FakeInfo())->$method()[$field]['door'];
 
             match (true) {
                 $door === 'th' => $hit['th'] = true,
@@ -189,10 +207,11 @@ class AddressTest extends TestCase
     // ── Postal code & town ───────────────────────
 
     /** Postal code: exactly 4 digits. */
-    public function testPostalCodeFormat(): void
+    #[DataProvider('addressProvider')]
+    public function testPostalCodeFormat($method, $field): void
     {
         for ($i = 0; $i < 20; $i++) {
-            $postalCode = (new FakeInfo())->getAddress()['address']['postal_code'];
+            $postalCode = (new FakeInfo())->$method()[$field]['postal_code'];
 
             $this->assertMatchesRegularExpression(
                 '/^\d{4}$/',
@@ -203,10 +222,11 @@ class AddressTest extends TestCase
     }
 
     /** Town name must be a non-empty string. */
-    public function testTownNameIsNonEmpty(): void
+    #[DataProvider('addressProvider')]
+    public function testTownNameIsNonEmpty($method, $field): void
     {
         for ($i = 0; $i < 20; $i++) {
-            $townName = (new FakeInfo())->getAddress()['address']['town_name'];
+            $townName = (new FakeInfo())->$method()[$field]['town_name'];
 
             $this->assertIsString($townName);
             $this->assertNotEmpty($townName);
@@ -216,10 +236,11 @@ class AddressTest extends TestCase
     // ── Comprehensive (decision table: all-valid) ─
 
     /** Every generated address must satisfy ALL constraints simultaneously. */
-    public function testAllFieldsValidSimultaneously(): void
+    #[DataProvider('addressProvider')]
+    public function testAllFieldsValidSimultaneously($method, $field): void
     {
         for ($i = 0; $i < 100; $i++) {
-            $a = (new FakeInfo())->getAddress()['address'];
+            $a = (new FakeInfo())->$method()[$field];
 
             $this->assertMatchesRegularExpression('/^[A-Za-zÆØÅæøå][A-Za-zÆØÅæøå ]*$/u', $a['street']);
             $this->assertMatchesRegularExpression('/^[1-9]\d{0,2}[A-Z]?$/', (string) $a['number']);
