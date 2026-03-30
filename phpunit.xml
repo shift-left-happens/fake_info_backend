@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php" colors="true">
-    <source>
-        <include>
-            <directory>src</directory>
-        </include>
-    </source>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true">
     <testsuites>
-        <testsuite name="FakeInfo Test Suite">
-            <file>tests/FakeInfoTest_setCpr.php</file>
+        <testsuite name="Unit">
+            <directory>tests</directory>
+            <exclude>tests/ApiIntegrationTest.php</exclude>
+        </testsuite>
+        <testsuite name="Integration">
+            <file>tests/ApiIntegrationTest.php</file>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="DB_NAME" value="addresses_test" force="true"/>
+    </php>
 </phpunit>

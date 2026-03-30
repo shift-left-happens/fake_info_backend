@@ -2,14 +2,44 @@
 
 require_once 'src/FakeInfo.php';
 
-define('POS_ENTITY', 1);
+use App\FakeInfo;
 
-define('ERROR_METHOD', 0);
-define('ERROR_ENDPOINT', 1);
-define('ERROR_PARAMS', 2);
+$reportError = function (int $error = -1) {
+    switch ($error) {
+        case 0:
+            http_response_code(405);
+            $message = 'Incorrect HTTP method';
+            break;
+        case 1:
+            http_response_code(404);
+            $message = 'Incorrect API endpoint';
+            break;
+        case 2:
+            http_response_code(400);
+            $message = 'Incorrect GET parameter value';
+            break;
+        default:
+            http_response_code(500);
+            $message = 'Unknown error';
+    }
+    echo json_encode([
+        'error' => $message
+    ]);
+    exit();
+};
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    reportError(ERROR_METHOD);
+    $reportError(0);
 }
 
 $url = strtok($_SERVER['REQUEST_URI'], "?");    // GET parameters are removed
@@ -24,17 +54,16 @@ $url = substr($url, strpos($url, basename(__DIR__)));
 $urlPieces = explode('/', urldecode($url));
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
 header('Accept-version: v1');
 
-$fakePerson = new FakeInfo;
+$fakePerson = new FakeInfo();
 http_response_code(200);
 
 if (count($urlPieces) === 1) {
-    reportError(ERROR_ENDPOINT);
+    $reportError(1);
 }
 
-switch ($urlPieces[POS_ENTITY]) {
+switch ($urlPieces[1]) {
     case 'cpr':
         echo json_encode(['CPR' => $fakePerson->getCpr()]);
         break;
@@ -61,7 +90,7 @@ switch ($urlPieces[POS_ENTITY]) {
         $numPersons = abs((int)$numPersons);
         switch (true) {
             case $numPersons === 0:
-                reportError(ERROR_PARAMS);
+                $reportError(2);
                 break;
             case $numPersons === 1:
                 echo json_encode($fakePerson->getFakePerson());
@@ -70,33 +99,9 @@ switch ($urlPieces[POS_ENTITY]) {
                 echo json_encode($fakePerson->getFakePersons($numPersons), JSON_INVALID_UTF8_SUBSTITUTE);
                 break;
             default:
-                reportError(ERROR_PARAMS);
+                $reportError(2);
         }
         break;
     default:
-        reportError(ERROR_ENDPOINT);
-}
-
-function reportError(int $error = -1) {
-    switch ($error) {
-        case ERROR_METHOD:
-            http_response_code(405);
-            $message = 'Incorrect HTTP method';
-            break;
-        case ERROR_ENDPOINT:
-            http_response_code(404);
-            $message = 'Incorrect API endpoint';
-            break;
-        case ERROR_PARAMS:
-            http_response_code(400);
-            $message = 'Incorrect GET parameter value';
-            break;
-        default:
-            http_response_code(500);
-            $message = 'Unknown error';
-    }
-    echo json_encode([
-        'error' => $message
-    ]);
-    exit();
+        $reportError(1);
 }

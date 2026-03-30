@@ -1,14 +1,37 @@
-FROM php:8.2-apache
+FROM php:8.4-apache
 
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install system libraries required for PHP extensions
+RUN apt-get update && apt-get install -y \
+    libzip-dev \
+    pkg-config \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+# Install required PHP extensions
+RUN docker-php-ext-install mysqli pdo pdo_mysql zip
 
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
 WORKDIR /var/www/html
 
-RUN pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && echo "xdebug.mode=coverage" > /usr/local/etc/php/conf.d/99-xdebug-settings.ini \
-    && echo "xdebug.start_with_request=no" >> /usr/local/etc/php/conf.d/99-xdebug-settings.ini
+# Copy composer files first and install dependencies
+COPY composer.json composer.lock ./
+RUN composer install
+
+# Copy the rest of the project
+COPY . .
+
+# Apache config
+COPY apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+# Fix permissions
+RUN chown -R www-data:www-data /var/www/html
+
+# Start Apache
+CMD ["apache2-foreground"]

@@ -1,8 +1,10 @@
+version: "3.9"
+
 services:
   web:
     build: .
     ports:
-      - '8080:80'
+      - '${BACKEND_PORT:-8080}:80'
     depends_on:
       - db
     environment:
@@ -11,7 +13,10 @@ services:
       DB_USER: root
       DB_PASSWORD: ''
     volumes:
-      - ./:/var/www/html
+      - ./src:/var/www/html/src
+      - ./tests:/var/www/html/tests
+      - ./phpunit.xml:/var/www/html/phpunit.xml
+    command: apache2-foreground
 
   db:
     image: mariadb:11
@@ -21,6 +26,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./db/addresses.sql:/docker-entrypoint-initdb.d/01-addresses.sql:ro
+      - ./db/addresses_test.sql:/docker-entrypoint-initdb.d/02-addresses_test.sql:ro
 
 volumes:
   db_data:

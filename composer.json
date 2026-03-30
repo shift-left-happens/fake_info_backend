@@ -1,24 +1,24 @@
 {
-  "name": "soft-mandatory/fake-info-backend",
-  "description": "Fake data generator backend",
-  "type": "project",
-  "require": {
-    "php": ">=8.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.5"
-  },
-  "autoload": {
-    "classmap": [
-      "src/"
-    ]
-  },
-  "autoload-dev": {
-    "classmap": [
-      "tests/"
-    ]
-  },
-  "scripts": {
-    "test": "phpunit"
-  }
+    "name": "lucaslevy/fake-info-backend",
+    "description": "Fake info backend API",
+    "type": "project",
+    "authors": [
+        {
+            "name": "baduke3520",
+            "email": "luch0002@stud.kea.dk"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.0"
+    }
 }

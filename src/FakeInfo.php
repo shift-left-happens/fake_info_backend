@@ -1,36 +1,38 @@
 <?php
 
+namespace App;
+
 /**
  * Class FakeInfo.
  * It generates information about fake persons.
- * 
+ *
  * @author  Arturo Mora-Rioja
  * @version 1.0.0 March 2023
  */
 
-class FakeInfo {
-
+class FakeInfo
+{
     public const GENDER_FEMININE = 'female';
     public const GENDER_MASCULINE = 'male';
     private const FILE_PERSON_NAMES = 'data/person-names.json';
     private const PHONE_PREFIXES = [
-        '2', '30', '31', '40', '41', '42', '50', '51', '52', '53', '60', '61', '71', '81', '91', '92', '93', '342', 
-        '344', '345', '346', '347', '348', '349', '356', '357', '359', '362', '365', '366', '389', '398', '431', 
-        '441', '462', '466', '468', '472', '474', '476', '478', '485', '486', '488', '489', '493', '494', '495', 
-        '496', '498', '499', '542', '543', '545', '551', '552', '556', '571', '572', '573', '574', '577', '579', 
-        '584', '586', '587', '589', '597', '598', '627', '629', '641', '649', '658', '662', '663', '664', '665', 
+        '2', '30', '31', '40', '41', '42', '50', '51', '52', '53', '60', '61', '71', '81', '91', '92', '93', '342',
+        '344', '345', '346', '347', '348', '349', '356', '357', '359', '362', '365', '366', '389', '398', '431',
+        '441', '462', '466', '468', '472', '474', '476', '478', '485', '486', '488', '489', '493', '494', '495',
+        '496', '498', '499', '542', '543', '545', '551', '552', '556', '571', '572', '573', '574', '577', '579',
+        '584', '586', '587', '589', '597', '598', '627', '629', '641', '649', '658', '662', '663', '664', '665',
         '667', '692', '693', '694', '697', '771', '772', '782', '783', '785', '786', '788', '789', '826', '827', '829'
     ];
     private const MIN_BULK_PERSONS = 2;
     private const MAX_BULK_PERSONS = 100;
 
-    private string $cpr;    
+    private string $cpr;
     private string $firstName;
     private string $lastName;
     private string $gender;
     private string $birthDate;
     private array $address = [];
-    private string $phone;  
+    private string $phone;
 
     public function __construct()
     {
@@ -40,7 +42,7 @@ class FakeInfo {
         $this->setAddress();
         $this->setPhone();
     }
-    
+
     /**
      * Generates a fake CPR based on the existing birth date and gender.
      * - If no birth date exists, it generates it.
@@ -49,9 +51,9 @@ class FakeInfo {
     private function setCpr(): void
     {
         if (!isset($this->birthDate)) {
-            $this->setBirthDate();        
+            $this->setBirthDate();
         }
-        if (!isset($this->firstName) || !isset($this->lastName) || (!isset($this->gender))){
+        if (!isset($this->firstName) || !isset($this->lastName) || (!isset($this->gender))) {
             $this->setFullNameAndGender();
         }
         // The CPR must end in an even number for females, odd for males
@@ -59,8 +61,8 @@ class FakeInfo {
         if ($this->gender === self::GENDER_FEMININE && fmod($finalDigit, 2) === 1) {
             $finalDigit++;
         }
-        
-        $this->cpr = substr($this->birthDate, 8, 2) . 
+
+        $this->cpr = substr($this->birthDate, 8, 2) .
             substr($this->birthDate, 5, 2) .
             substr($this->birthDate, 2, 2) .
             self::getRandomDigit() .
@@ -72,13 +74,13 @@ class FakeInfo {
     /**
      * Generates a fake date of birth from 1900 to the present year.
      */
-    private function setBirthDate(): void 
+    private function setBirthDate(): void
     {
         $year = mt_rand(1900, date('Y'));
         $month = mt_rand(1, 12);
         if (in_array($month, [1, 3, 5, 7, 8, 10, 12])) {
             $day = mt_rand(1, 31);
-        } else if (in_array($month, [4, 6, 9, 11])) {
+        } elseif (in_array($month, [4, 6, 9, 11])) {
             $day = mt_rand(1, 30);
         } else {
             // Leap years are not taken into account
@@ -96,7 +98,7 @@ class FakeInfo {
     {
         $names = json_decode(file_get_contents(self::FILE_PERSON_NAMES), true);
         $person = $names['persons'][mt_rand(0, count($names['persons']) - 1)];
-        
+
         $this->firstName = $person['firstName'];
         $this->lastName = $person['lastName'];
         $this->gender = $person['gender'];
@@ -144,7 +146,7 @@ class FakeInfo {
             // The characters need to be laid out in an array instead of a string.
             // Otherwise, the Danish vowels are not correctly interpreted as UTF-8
             $lowerCaseLetters = [
-                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
                 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'ø', 'æ', 'å'];
             $this->address['door'] = $lowerCaseLetters[mt_rand(0, count($lowerCaseLetters) - 1)];
             if ($doorType === 20) {
@@ -154,27 +156,27 @@ class FakeInfo {
         }
 
         // Postal code and town
-        require_once 'Town.php';        
-        $town = new Town;
+        require_once 'Town.php';
+        $town = new \Town();
         $town = $town->getRandomTown();
         $this->address['postal_code'] = $town['postal_code'];
-        $this->address['town_name'] = $town['town_name'];        
+        $this->address['town_name'] = $town['town_name'];
         unset($town);
     }
-    
+
     /**
      * Returns a random text.
      * - Only alphabetic characters and the space are allowed
-     * 
+     *
      * @param  int    Length of the text to return (1 by default)
      * @return string The random text
      */
     private static function getRandomText(int $length = 1, bool $includeDanishCharacters = true): string
     {
         $validCharacters = [
-            ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 
-            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 
-            'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 
+            ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F',
+            'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
             'Y', 'Z'
         ];
         if ($includeDanishCharacters) {
@@ -209,19 +211,20 @@ class FakeInfo {
      * - If it does not exist already, it generates a new one.
      * - Since the CPR depends on the date of birth and the gender,
      *   if any of these do not exist, they are also generated
-     * 
+     *
      * @return string The fake CPR
      */
-    public function getCpr(): string {
-        return $this->cpr; 
+    public function getCpr(): string
+    {
+        return $this->cpr;
     }
-    
+
     /**
      * Returns a fake full name and gender
-     * 
+     *
      * @return array ['firstName' => value, 'lastName' => value, 'gender' => 'female' | 'male']
      */
-    public function getFullNameAndGender(): array 
+    public function getFullNameAndGender(): array
     {
         return [
             'firstName' => $this->firstName,
@@ -232,10 +235,10 @@ class FakeInfo {
 
     /**
      * Returns a fake full name, gender, and birth date
-     * 
+     *
      * @return array ['firstName' => value, 'lastName' => value, 'gender' => 'female' | 'male', 'birthDate' => value]
      */
-    public function getFullNameGenderAndBirthDate(): array 
+    public function getFullNameGenderAndBirthDate(): array
     {
         return [
             'firstName' => $this->firstName,
@@ -247,7 +250,7 @@ class FakeInfo {
 
     /**
      * Returns a fake CPR, full name, and gender
-     * 
+     *
      * @return array ['CPR' => value, 'firstName' => value, 'lastName' => value, 'gender' => 'female' | 'male']
      */
     public function getCprFullNameAndGender(): array
@@ -262,8 +265,10 @@ class FakeInfo {
 
     /**
      * Returns a fake CPR, full name, gender, and birth date
-     * 
-     * @return array ['CPR' => value, 'firstName' => value, 'lastName' => value, 'gender' => 'female' | 'male', 'birthDate' => value]
+     *
+     * @return array ['CPR' => value, 'firstName' => value,
+     *                'lastName' => value, 'gender' => 'female' | 'male',
+     *                'birthDate' => value]
      */
     public function getCprFullNameGenderAndBirthDate(): array
     {
@@ -278,7 +283,7 @@ class FakeInfo {
 
     /**
      * Returns a fake Danish address
-     * 
+     *
      * @return string The fake address
      */
     public function getAddress(): array
@@ -288,7 +293,7 @@ class FakeInfo {
 
     /**
      * Returns a fake Danish phone number
-     * 
+     *
      * @return string The fake phone number
      */
     public function getPhoneNumber(): string
@@ -297,11 +302,14 @@ class FakeInfo {
     }
 
     /**
-     * Returns fake person information 
-     * 
-     * @return array ['CPR' => value, 'firstName' => value, 'lastName' => value, 'gender' => 'female'|'male', 'birthDate' => value, 'phoneNumber' => value]
+     * Returns fake person information
+     *
+     * @return array ['CPR' => value, 'firstName' => value,
+     *                'lastName' => value, 'gender' => 'female'|'male',
+     *                'birthDate' => value, 'phoneNumber' => value]
      */
-    public function getFakePerson(): array {
+    public function getFakePerson(): array
+    {
         return [
             'CPR' => $this->cpr,
             'firstName' => $this->firstName,
@@ -310,21 +318,26 @@ class FakeInfo {
             'birthDate' => $this->birthDate,
             'address' => $this->address,
             'phoneNumber' => $this->phone
-        ];    
+        ];
     }
 
-    /** 
+    /**
      * Returns information about several fake persons
-     * 
+     *
      * @param $amount The number of fake persons to generate, between 2 and 100 inclusive
      * @return array The fake information
      */
-    public function getFakePersons(int $amount = FakeInfo::MIN_BULK_PERSONS): array {
-        if ($amount < FakeInfo::MIN_BULK_PERSONS) { $amount = FakeInfo::MIN_BULK_PERSONS; }
-        if ($amount > FakeInfo::MAX_BULK_PERSONS) { $amount = FakeInfo::MAX_BULK_PERSONS; }
+    public function getFakePersons(int $amount = FakeInfo::MIN_BULK_PERSONS): array
+    {
+        if ($amount < FakeInfo::MIN_BULK_PERSONS) {
+            $amount = FakeInfo::MIN_BULK_PERSONS;
+        }
+        if ($amount > FakeInfo::MAX_BULK_PERSONS) {
+            $amount = FakeInfo::MAX_BULK_PERSONS;
+        }
 
         for ($index = 0; $index < $amount; $index++) {
-            $fakeInfo = new FakeInfo;
+            $fakeInfo = new FakeInfo();
             $bulkInfo[] = $fakeInfo->getFakePerson();
         }
         return $bulkInfo;
@@ -332,10 +345,10 @@ class FakeInfo {
 
     /**
      * Generates a random digit as a string
-     * 
+     *
      * @return string The randomly generated digit
      */
-    private static function getRandomDigit(): string 
+    private static function getRandomDigit(): string
     {
         return (string) mt_rand(0, 9);
     }
