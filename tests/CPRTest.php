@@ -1,28 +1,40 @@
 <?php
 
-declare(strict_types=1);
+// declare(strict_types=1);
 
-use App\FakeInfo;
+// use PHPUnit\Framework\TestCase;
+
 use PHPUnit\Framework\TestCase;
+use App\FakeInfo;
 
-require_once __DIR__ . '/../src/FakeInfo.php';
-
-final class FakeInfoTest_setCpr extends TestCase
+final class CPRTest extends TestCase
 {
+    private FakeInfo $fakeInfo;
+    protected function setUp(): void
+    {
+        $this->fakeInfo = new FakeInfo();
+    }
     // Integrationstest via model: CPR-præfiks skal matche den genererede fødselsdato.
+    
     public function testGeneratedCprStartsWithBirthDatePrefix(): void
     {
-        $fakeInfo = new FakeInfo();
-        $person = $fakeInfo->getFullNameGenderAndBirthDate();
+        $person = $this->fakeInfo->getFullNameGenderAndBirthDate();
 
-        $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $fakeInfo->getCpr());
+        $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $this->fakeInfo->getCpr());
+        
+        $person = $this->fakeInfo->getFakePerson();
+
+        $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $this->fakeInfo->getCpr());
+        
+        $person = $this->fakeInfo->getCprFullNameGenderAndBirthDate();
+
+        $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $this->fakeInfo->getCpr());
     }
 
     // Integrationstest via model: fødselsdatoen har korrekt format.
     public function testGeneratedBirthDateHasExpectedFormat(): void
     {
-        $fakeInfo = new FakeInfo();
-        $person = $fakeInfo->getFullNameGenderAndBirthDate();
+        $person = $this->fakeInfo->getFullNameGenderAndBirthDate();
 
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
     }
@@ -30,8 +42,7 @@ final class FakeInfoTest_setCpr extends TestCase
     // Integrationstest via model: navn og køn bliver genereret med gyldige værdier.
     public function testGeneratedNameAndGenderAreValid(): void
     {
-        $fakeInfo = new FakeInfo();
-        $fullNameAndGender = $fakeInfo->getFullNameAndGender();
+        $fullNameAndGender = $this->fakeInfo->getFullNameAndGender();
 
         $this->assertIsString($fullNameAndGender['firstName']);
         $this->assertNotSame('', $fullNameAndGender['firstName']);
@@ -43,10 +54,10 @@ final class FakeInfoTest_setCpr extends TestCase
     // Integrationstest via model: getFakePerson skal være konsistent med de enkelte getters.
     public function testGetFakePersonHasConsistentCoreValues(): void
     {
-        $fakeInfo = new FakeInfo();
-        $person = $fakeInfo->getFakePerson();
+        
+        $person = $this->fakeInfo->getFakePerson();
 
-        $this->assertSame($fakeInfo->getCpr(), $person['CPR']);
+        $this->assertSame($this->fakeInfo->getCpr(), $person['CPR']);
         $this->assertContains($person['gender'], [FakeInfo::GENDER_FEMININE, FakeInfo::GENDER_MASCULINE]);
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
     }
@@ -54,18 +65,16 @@ final class FakeInfoTest_setCpr extends TestCase
     // Integrationstest via model: CPR skal være præcis 10 cifre.
     public function testGeneratedCprHasExactLengthTenDigits(): void
     {
-        $fakeInfo = new FakeInfo();
 
-        $this->assertMatchesRegularExpression('/^\d{10}$/', $fakeInfo->getCpr());
+        $this->assertMatchesRegularExpression('/^\d{10}$/', $this->fakeInfo->getCpr());
     }
 
     // Integrationstest via model: genereret køn skal matche parity for CPR's sidste ciffer.
     public function testGeneratedGenderMatchesCprFinalDigitParity(): void
     {
-        $fakeInfo = new FakeInfo();
 
-        $fullNameAndGender = $fakeInfo->getFullNameAndGender();
-        $lastDigit = (int) substr($fakeInfo->getCpr(), -1);
+        $fullNameAndGender = $this->fakeInfo->getFullNameAndGender();
+        $lastDigit = (int) substr($this->fakeInfo->getCpr(), -1);
 
         $this->assertContains($fullNameAndGender['gender'], [FakeInfo::GENDER_FEMININE, FakeInfo::GENDER_MASCULINE]);
 
