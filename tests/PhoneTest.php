@@ -90,4 +90,20 @@ class PhoneTest extends TestCase
             $this->assertTrue($this->hasValidPrefix($phone));
         }
     }
+
+    public function testMultiplePersonsPhones(): void
+    {
+        $fakePersons = $this->fakeInfo->getFakePersons(10); // test 10 persons
+
+        $this->assertCount(10, $fakePersons, "Should generate exactly 10 persons");
+
+        foreach ($fakePersons as $person) {
+            $phone = $person['phoneNumber'];
+
+            // re-use your helper for prefix
+            $this->assertEquals(8, strlen($phone), "Phone length should be 8");
+            $this->assertTrue(ctype_digit($phone), "Phone should contain only digits");
+            $this->assertTrue($this->hasValidPrefix($phone), "Phone prefix is not allowed");
+        }
+    }
 }

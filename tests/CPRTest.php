@@ -17,9 +17,18 @@ final class CPRTest extends TestCase
         $this->fakeInfo = new FakeInfo();
     }
     // Integrationstest via model: CPR-præfiks skal matche den genererede fødselsdato.
+    
     public function testGeneratedCprStartsWithBirthDatePrefix(): void
     {
         $person = $this->fakeInfo->getFullNameGenderAndBirthDate();
+
+        $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $this->fakeInfo->getCpr());
+        
+        $person = $this->fakeInfo->getFakePerson();
+
+        $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $this->fakeInfo->getCpr());
+        
+        $person = $this->fakeInfo->getCprFullNameGenderAndBirthDate();
 
         $this->assertStringStartsWith($this->birthDateToCprPrefix($person['birthDate']), $this->fakeInfo->getCpr());
     }
