@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/FakeInfo.php';
 
-final class FakeInfoTest_setCpr extends TestCase
+final class CPRTest extends TestCase
 {
     // Integrationstest via model: CPR-præfiks skal matche den genererede fødselsdato.
     public function testGeneratedCprStartsWithBirthDatePrefix(): void
