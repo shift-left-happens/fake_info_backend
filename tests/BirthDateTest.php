@@ -88,4 +88,13 @@ class BirthDateTest extends TestCase
         $this->assertTrue($hit30Day, 'Branch 2 (30-day months) was never hit in 1000 iterations');
         $this->assertTrue($hitFebruary, 'Branch 3 (February) was never hit in 1000 iterations');
     }
+
+    // birthDate is valid for every person returned by getFakePersons.
+    public function testBirthDateInBulk(): void
+    {
+        $persons = $this->fakeInfo->getFakePersons(100);
+        foreach ($persons as $person) {
+            $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
+        }
+    }
 }
