@@ -6,13 +6,6 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests</directory>
-            <exclude>tests/ApiIntegrationTest.php</exclude>
-        </testsuite>
-        <testsuite name="Integration">
-            <file>tests/ApiIntegrationTest.php</file>
         </testsuite>
     </testsuites>
-    <php>
-        <env name="DB_NAME" value="addresses_test" force="true"/>
-    </php>
 </phpunit>

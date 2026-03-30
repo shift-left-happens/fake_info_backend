@@ -13,9 +13,8 @@ services:
       DB_USER: root
       DB_PASSWORD: ''
     volumes:
-      - ./src:/var/www/html/src
-      - ./tests:/var/www/html/tests
-      - ./phpunit.xml:/var/www/html/phpunit.xml
+      - ./src:/var/www/html/src   # only your source code
+      - ./tests:/var/www/html/tests #Test files
     command: apache2-foreground
 
   db:
@@ -26,7 +25,6 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./db/addresses.sql:/docker-entrypoint-initdb.d/01-addresses.sql:ro
-      - ./db/addresses_test.sql:/docker-entrypoint-initdb.d/02-addresses_test.sql:ro
 
 volumes:
   db_data:
