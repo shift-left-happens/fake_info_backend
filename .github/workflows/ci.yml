@@ -72,6 +72,7 @@ jobs:
     name: SonarCloud Scan
     runs-on: ubuntu-latest
     needs: testsuite-php
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
