@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -y \
 # Install required PHP extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql zip
 
+# Install Xdebug for code coverage
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
