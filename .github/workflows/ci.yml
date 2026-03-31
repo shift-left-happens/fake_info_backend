@@ -48,31 +48,27 @@ jobs:
           done
 
       - name: Run PHPUnit with coverage
-        id: phpunit
         run: docker compose exec -T -e XDEBUG_MODE=coverage web bash -c "mkdir -p coverage && php vendor/bin/phpunit tests --coverage-clover coverage/clover.xml"
-        continue-on-error: true
 
       - name: Copy coverage report from container
+        if: always()
         run: |
           mkdir -p coverage
           docker compose cp web:/var/www/html/coverage/clover.xml coverage/clover.xml
 
       - name: Upload coverage artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/clover.xml
-
-      - name: Fail if tests failed
-        if: steps.phpunit.outcome == 'failure'
-        run: exit 1
 
   # Job 3: SonarCloud Analysis (requires coverage from testsuite-php)
   sonarcloud:
     name: SonarCloud Scan
     runs-on: ubuntu-latest
     needs: testsuite-php
-    if: always()
+    if: needs.testsuite-php.result == 'success' || needs.testsuite-php.result == 'failure'
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -86,6 +82,6 @@ jobs:
           path: coverage
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v3
+        uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
