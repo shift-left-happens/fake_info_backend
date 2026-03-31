@@ -48,7 +48,9 @@ jobs:
           done
 
       - name: Run PHPUnit with coverage
+        id: phpunit
         run: docker compose exec -T -e XDEBUG_MODE=coverage web bash -c "mkdir -p coverage && php vendor/bin/phpunit tests --coverage-clover coverage/clover.xml"
+        continue-on-error: true
 
       - name: Copy coverage report from container
         run: docker compose cp web:/var/www/html/coverage/clover.xml coverage/clover.xml
@@ -58,6 +60,10 @@ jobs:
         with:
           name: coverage-report
           path: coverage/clover.xml
+
+      - name: Fail if tests failed
+        if: steps.phpunit.outcome == 'failure'
+        run: exit 1
 
   # Job 3: SonarCloud Analysis (requires coverage from testsuite-php)
   sonarcloud:
