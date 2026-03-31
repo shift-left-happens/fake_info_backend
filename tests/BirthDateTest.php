@@ -10,10 +10,12 @@ require_once __DIR__ . '/../src/FakeInfo.php';
 class BirthDateTest extends TestCase
 {
     private FakeInfo $fakeInfo;
+    private string $birthDate;
 
     protected function setUp(): void
     {
         $this->fakeInfo = new FakeInfo();
+        $this->birthDate = $this->fakeInfo->getFullNameGenderAndBirthDate()['birthDate'];
     }
 
     // Splits a 'YYYY-MM-DD' string into year, month, and day as integers.
@@ -30,15 +32,13 @@ class BirthDateTest extends TestCase
     // Output must be formatted as YYYY-MM-DD.
     public function testBirthDateFormat(): void
     {
-        $birthDate = $this->fakeInfo->getFullNameGenderAndBirthDate()['birthDate'];
-        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $birthDate);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $this->birthDate);
     }
 
     // Year must be between 1900 and the current year.
     public function testYearRange(): void
     {
-        $birthDate = $this->fakeInfo->getFullNameGenderAndBirthDate()['birthDate'];
-        $parts = $this->extractDateParts($birthDate);
+        $parts = $this->extractDateParts($this->birthDate);
 
         $this->assertGreaterThanOrEqual(1900, $parts['year']);
         $this->assertLessThanOrEqual((int) date('Y'), $parts['year']);
@@ -47,8 +47,7 @@ class BirthDateTest extends TestCase
     // Month must be between 1 and 12.
     public function testMonthRange(): void
     {
-        $birthDate = $this->fakeInfo->getFullNameGenderAndBirthDate()['birthDate'];
-        $parts = $this->extractDateParts($birthDate);
+        $parts = $this->extractDateParts($this->birthDate);
 
         $this->assertGreaterThanOrEqual(1, $parts['month']);
         $this->assertLessThanOrEqual(12, $parts['month']);
@@ -96,5 +95,19 @@ class BirthDateTest extends TestCase
         foreach ($persons as $person) {
             $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $person['birthDate']);
         }
+    }
+
+    // birthDate is present and valid in the CPR+name+gender+dob response.
+    public function testBirthDateInCprResponse(): void
+    {
+        $birthDate = $this->fakeInfo->getCprFullNameGenderAndBirthDate()['birthDate'];
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $birthDate);
+    }
+
+    // birthDate is present and valid in the single-person response.
+    public function testBirthDateInSinglePerson(): void
+    {
+        $birthDate = $this->fakeInfo->getFakePerson()['birthDate'];
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $birthDate);
     }
 }
