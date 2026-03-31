@@ -53,7 +53,9 @@ jobs:
         continue-on-error: true
 
       - name: Copy coverage report from container
-        run: docker compose cp web:/var/www/html/coverage/clover.xml coverage/clover.xml
+        run: |
+          mkdir -p coverage
+          docker compose cp web:/var/www/html/coverage/clover.xml coverage/clover.xml
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
