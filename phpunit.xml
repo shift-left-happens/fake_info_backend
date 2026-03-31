@@ -8,6 +8,11 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
     <php>
         <env name="DB_NAME" value="addresses_test" force="true"/>
     </php>
