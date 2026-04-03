@@ -80,6 +80,12 @@ class PhoneTest extends TestCase
 
         $this->assertTrue($this->hasValidPrefix($phone), "Person phone prefix is not allowed");
     }
+    public function testRandomPhone(): void
+    {
+        $phone = $this->fakeInfo->getPhoneNumber();
+        $another_phone = (new FakeInfo())->getPhoneNumber();
+        $this->assertNotEquals($phone, $another_phone, "Two generated phone numbers should not be the same.");
+    }
     public function testPhoneAlwaysValid(): void
     {
         for ($i = 0; $i < 100; $i++) {
