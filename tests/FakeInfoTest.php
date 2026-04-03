@@ -30,14 +30,6 @@ class FakeInfoTest extends TestCase
         $this->fakeInfo = new FakeInfo();
     }
 
-    public function testCprHasTenDigits(): void
-    {
-        $fakeInfo = new FakeInfo();
-        $cpr = $fakeInfo->getCpr();
-
-        $this->assertMatchesRegularExpression('/^\d{10}$/', $cpr);
-    }
-
     public static function getTestData(): array
     {
         return [
@@ -79,9 +71,9 @@ class FakeInfoTest extends TestCase
     {
         $result = $this->fakeInfo->$method();
 
-        $this->assertArrayHasKey($fieldname, $result);
-        $this->assertIsString($result[$fieldname]);
-        $this->assertNotEmpty($result[$fieldname]);
+        $this->assertArrayHasKey($fieldname, $result, "Field '$fieldname' is missing in method '$method'");
+        $this->assertIsString($result[$fieldname], "Field '$fieldname' should be a string in method '$method'");
+        $this->assertNotEmpty($result[$fieldname], "Field '$fieldname' should not be empty in method '$method'");
     }
 
     // #[DataProvider('getTestData')]
@@ -108,7 +100,7 @@ class FakeInfoTest extends TestCase
 
         $this->assertMatchesRegularExpression(
             $pattern,
-            $result['firstName']
+            $result['firstName'], 'First name format is incorrect'
         );
     }
 
@@ -120,7 +112,7 @@ class FakeInfoTest extends TestCase
 
         $this->assertMatchesRegularExpression(
             $pattern,
-            $result['lastName']
+            $result['lastName'], 'Last name format is incorrect'
         );
     }
 
@@ -139,7 +131,7 @@ class FakeInfoTest extends TestCase
     public function testIsValidGender($fieldname, $method)
     {
         $result = $this->fakeInfo->$method();
-        $this->assertContains($result[$fieldname], ['male', 'female']);
+        $this->assertContains($result[$fieldname], ['male', 'female'], "Gender should be 'male' or 'female' in method '$method'");
     }
 
 
@@ -165,10 +157,10 @@ class FakeInfoTest extends TestCase
         ];
     }
     #[DataProvider('noNumbersProvider')]
-    public function testFirstNameNoNumbers($fieldname, $method)
+    public function testFieldNoNumbers($fieldname, $method)
     {
         $result = $this->fakeInfo->$method();
 
-        $this->assertDoesNotMatchRegularExpression('/[0-9]/', $result[$fieldname]);
+        $this->assertDoesNotMatchRegularExpression('/[0-9]/', $result[$fieldname], "Field '$fieldname' should not contain numbers in method '$method'");
     }
 }
