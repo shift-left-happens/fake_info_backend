@@ -62,6 +62,13 @@ class FakeInfo
             $finalDigit++;
         }
 
+        // Bugfix
+        // if ($this->gender === self::GENDER_FEMININE && $finalDigit % 2 !== 0) {
+        //     $finalDigit--;
+        // } elseif ($this->gender === self::GENDER_MASCULINE && $finalDigit % 2 === 0) {
+        //     $finalDigit++;
+        // }
+
         $this->cpr = substr($this->birthDate, 8, 2) .
             substr($this->birthDate, 5, 2) .
             substr($this->birthDate, 2, 2) .
